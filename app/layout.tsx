@@ -1,0 +1,61 @@
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { cn } from "@/lib/utils";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import AuthLoadingOverlay from "@/components/auth/AuthLoadingOverlay";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: {
+    default: "NextBlog - Modern Blog Platform",
+    template: "%s | NextBlog",
+  },
+  description:
+    "A modern blog platform built with Next.js, TypeScript, and Supabase.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: process.env.NEXT_PUBLIC_SITE_URL,
+    siteName: "NextBlog",
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.jpg`,
+        width: 1200,
+        height: 630,
+        alt: "NextBlog - Modern Blog Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NextBlog - Modern Blog Platform",
+    description:
+      "A modern blog platform built with Next.js, TypeScript, and Supabase.",
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.jpg`],
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className="light">
+      <body className={cn(inter.className, "min-h-screen flex flex-col")}>
+        <AuthProvider>
+          <AuthLoadingOverlay />
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <Toaster />
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}

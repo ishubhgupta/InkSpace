@@ -1,0 +1,80 @@
+{
+  "timestamp": "2025-06-02T08:58:35.100Z",
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "total": 10
+  },
+  "categories": {
+    "originalFixes": {
+      "passed": 4,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Publish Button Hover Fix",
+          "passed": true,
+          "message": "Publish Button Hover Fix: All patterns found"
+        },
+        {
+          "name": "Sign Out Functionality Fix",
+          "passed": true,
+          "message": "Sign Out Functionality Fix: All patterns found"
+        },
+        {
+          "name": "Header Overlap Fix - Dashboard Layout",
+          "passed": true,
+          "message": "Header Overlap Fix - Dashboard Layout: All patterns found"
+        },
+        {
+          "name": "Header Overlap Fix - Sidebar",
+          "passed": true,
+          "message": "Header Overlap Fix - Sidebar: All patterns found"
+        }
+      ]
+    },
+    "newIssues": {
+      "passed": 3,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Login Redirect Logic",
+          "passed": true,
+          "message": "Login Redirect Logic: All patterns found"
+        },
+        {
+          "name": "Middleware Role Awareness",
+          "passed": true,
+          "message": "Middleware Role Awareness: All patterns found"
+        },
+        {
+          "name": "Signup Flow Enhancement",
+          "passed": true,
+          "message": "Signup Flow Enhancement: All patterns found"
+        }
+      ]
+    },
+    "performance": {
+      "passed": 3,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Header Performance",
+          "passed": true,
+          "message": "Header Performance: All patterns found"
+        },
+        {
+          "name": "Sidebar Performance",
+          "passed": true,
+          "message": "Sidebar Performance: All patterns found"
+        },
+        {
+          "name": "Button Performance",
+          "passed": true,
+          "message": "Button Performance: All patterns found"
+        }
+      ]
+    }
+  },
+  "successRate": "100.00",
+  "status": "ALL_TESTS_PASSED"
+}
