@@ -42,8 +42,7 @@ export default function PostEditor({
     isLoading: isSaving,
     error: postsError,
   } = usePosts();
-  const { uploadFile, isUploading, uploadProgress, compressionInfo } =
-    useFileUpload();
+  const { uploadFile, isUploading, compressionInfo } = useFileUpload();
   const router = useRouter();
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -301,11 +300,12 @@ export default function PostEditor({
                     onChange={handleImageUpload}
                     disabled={isUploading}
                     className="cursor-pointer"
-                  />
+                  />{" "}
                   {isUploading && (
                     <div className="mt-2">
-                      <div className="text-xs text-muted-foreground">
-                        Uploading... {uploadProgress}%
+                      <div className="text-xs text-muted-foreground flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-600 border-t-transparent"></div>
+                        Uploading...
                       </div>
                     </div>
                   )}{" "}
@@ -313,15 +313,12 @@ export default function PostEditor({
               )}
             </CardContent>
           </Card>
-
-          {/* Image Upload Info */}
+          {/* Image Upload Info */}{" "}
           <ImageUploadInfo
             type="blog"
             compressionInfo={compressionInfo}
             isUploading={isUploading}
-            uploadProgress={uploadProgress}
           />
-
           <Card>
             <CardHeader>
               <CardTitle>Category</CardTitle>
@@ -346,7 +343,6 @@ export default function PostEditor({
               </Select>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Tags</CardTitle>

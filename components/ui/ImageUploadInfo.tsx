@@ -3,7 +3,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Info,
   CheckCircle,
@@ -21,7 +20,6 @@ interface ImageUploadInfoProps {
     newSize: string;
   } | null;
   isUploading?: boolean;
-  uploadProgress?: number;
 }
 
 export default function ImageUploadInfo({
@@ -30,7 +28,6 @@ export default function ImageUploadInfo({
   maxImages = 2,
   compressionInfo,
   isUploading = false,
-  uploadProgress = 0,
 }: ImageUploadInfoProps) {
   const maxSizeKB = type === "profile" ? 50 : 100;
   const maxDimensions = type === "profile" ? "400x400px" : "1920x1080px";
@@ -43,16 +40,17 @@ export default function ImageUploadInfo({
           <ImageIcon className="h-4 w-4" />
           {type === "profile" ? "Profile Image" : "Blog Images"} Upload Info
         </CardTitle>
-      </CardHeader>
+      </CardHeader>{" "}
       <CardContent className="space-y-3">
-        {/* Upload Progress */}
+        {/* Upload Status */}
         {isUploading && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span>Uploading...</span>
-              <span>{uploadProgress}%</span>
+          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+              <span className="text-sm text-blue-700 dark:text-blue-300">
+                Uploading...
+              </span>
             </div>
-            <Progress value={uploadProgress} className="h-2" />
           </div>
         )}
 

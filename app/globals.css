@@ -177,3 +177,9 @@
 .prose a:hover {
   color: #1d4ed8;
 }
+
+/* Progress component styles */
+.progress-fill {
+  /* Set width via inline style or custom property in HTML, e.g. style="width: 50%;" or --progress: 50% */
+  width: var(--progress, 0%);
+}

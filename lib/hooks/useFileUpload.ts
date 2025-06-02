@@ -5,28 +5,21 @@ import { storageService } from "@/lib/supabase/storage";
 
 export function useFileUpload() {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const uploadFile = async (file: File): Promise<string | null> => {
     try {
       setIsUploading(true);
       setError(null);
-      setUploadProgress(0);
-
-      // Progress simulation since Supabase doesn't provide real-time progress
-      setUploadProgress(25);
 
       const fileUrl = await storageService.uploadImage(file);
 
-      setUploadProgress(100);
       return fileUrl;
     } catch (err: any) {
       setError(err.message || "Failed to upload file");
       return null;
     } finally {
       setIsUploading(false);
-      setTimeout(() => setUploadProgress(0), 1000);
     }
   };
 
@@ -39,12 +32,10 @@ export function useFileUpload() {
       return false;
     }
   };
-
   return {
     uploadFile,
     deleteFile,
     isUploading,
-    uploadProgress,
     error,
   };
 }

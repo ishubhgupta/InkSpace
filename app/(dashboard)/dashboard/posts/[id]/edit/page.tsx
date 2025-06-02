@@ -61,28 +61,37 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     .from("categories")
     .select("id, name")
     .order("name");
-
   // Fetch tags
   const { data: tags } = await supabase
     .from("tags")
     .select("id, name")
     .order("name");
+
   // Transform post data for editor
   const postForEditor = {
     ...post,
-    tags:
-      post.post_tags
-        ?.map((pt: any) => {
-          // Handle nested tag structure
-          if (pt.tags) {
-            return Array.isArray(pt.tags)
-              ? pt.tags.map((tag: any) => ({ id: tag.id, name: tag.name }))
-              : { id: pt.tags.id, name: pt.tags.name };
-          }
-          return null;
-        })
-        .flat()
-        .filter(Boolean) || [],
+    tags: post.post_tags
+      ? post.post_tags
+          .map((pt: any) => {
+            if (pt.tags) {
+              // Handle both array and single object cases
+              if (Array.isArray(pt.tags)) {
+                return pt.tags.map((tag: any) => ({
+                  id: tag.id,
+                  name: tag.name,
+                }));
+              } else {
+                return {
+                  id: pt.tags.id,
+                  name: pt.tags.name,
+                };
+              }
+            }
+            return null;
+          })
+          .flat()
+          .filter((tag: any) => tag !== null)
+      : [],
   };
 
   return (
