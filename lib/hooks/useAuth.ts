@@ -22,17 +22,17 @@ export function useAuth() {
           password,
         });
 
-        if (error) throw error;
-
-        // Show success message
+        if (error) throw error; // Show success message
         toast({
           title: "Welcome back!",
           description: "You've been successfully signed in.",
-        }); // Optimistic redirect for smoother UX
+        });
+
+        // Optimistic redirect for smoother UX
         router.push("/dashboard");
 
-        // Minimal refresh delay to allow navigation to complete
-        setTimeout(() => router.refresh(), 500);
+        // Reduce refresh frequency to minimize loading states
+        setTimeout(() => router.refresh(), 1200);
 
         return { success: true, user: data.user };
       } catch (err: any) {
@@ -57,9 +57,7 @@ export function useAuth() {
     async ({ email, password, username, full_name }: SignUpFormData) => {
       try {
         setIsLoading(true);
-        setError(null);
-
-        // Sign up with Supabase Auth
+        setError(null); // Sign up with Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp(
           {
             email,
@@ -69,24 +67,25 @@ export function useAuth() {
                 username,
                 full_name: full_name || "",
               },
+              emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
             },
           }
         );
 
         if (authError) throw authError;
-        if (!authData.user) throw new Error("User creation failed");
-
-        // Show success message
+        if (!authData.user) throw new Error("User creation failed"); // Show success message
         toast({
           title: "Account created successfully!",
           description:
             "Welcome to InkSpace! You can now start creating blog posts.",
-        }); // User profile will be automatically created by the handle_new_user() trigger
+        });
+
+        // User profile will be automatically created by the handle_new_user() trigger
         // Optimistic redirect
         router.push("/dashboard");
 
-        // Minimal refresh delay to allow navigation to complete
-        setTimeout(() => router.refresh(), 500);
+        // Reduce refresh delay to minimize loading states
+        setTimeout(() => router.refresh(), 1000);
 
         return { success: true, user: authData.user };
       } catch (err: any) {
@@ -110,20 +109,18 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     try {
       setIsLoading(true);
-      setError(null);
-
-      // Show farewell message
+      setError(null); // Show farewell message
       toast({
         title: "Signed out successfully",
         description: "Come back soon!",
-      }); // Optimistic navigation first for immediate feedback
-      router.push("/");
+      });
 
-      // Sign out in background
+      // Optimistic navigation first for immediate feedback
+      router.push("/"); // Sign out in background
       await supabase.auth.signOut();
 
-      // Refresh to clear any cached data - with longer delay
-      setTimeout(() => router.refresh(), 500);
+      // Refresh to clear any cached data - with longer delay to reduce loading
+      setTimeout(() => router.refresh(), 1000);
 
       return { success: true };
     } catch (err: any) {

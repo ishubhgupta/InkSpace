@@ -9,13 +9,12 @@ export default function AuthLoadingOverlay() {
   const { isLoading } = useAuthContext();
   const [showOverlay, setShowOverlay] = useState(false);
   const pathname = usePathname();
-
   useEffect(() => {
     if (isLoading) {
-      // Add a small delay before showing the overlay to prevent flashes
+      // Increase delay significantly to prevent unnecessary loading flashes
       const timer = setTimeout(() => {
         setShowOverlay(true);
-      }, 100);
+      }, 800); // Increased from 100ms to 800ms
       return () => clearTimeout(timer);
     } else {
       // Hide overlay immediately when loading is done

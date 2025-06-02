@@ -29,6 +29,8 @@ export default function CommentSection({
   const [userProfile, setUserProfile] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [commentContent, setCommentContent] = useState("");
+  const [showAllComments, setShowAllComments] = useState(false);
+  const [commentsPerPage] = useState(5); // Show 5 comments initially
   const supabase = createClient();
 
   // Check authentication status and get user profile
@@ -191,10 +193,20 @@ export default function CommentSection({
         </div>
       )}
     </div>
-  );
+  ); // Group comments by parent/child relationship
+  const organizedComments = comments
+    .filter((comment) => !comment.parent_id)
+    .map((comment) => ({
+      ...comment,
+      replies: comments.filter((reply) => reply.parent_id === comment.id),
+    }));
 
-  // Group comments by parent/child relationship
-  const organizedComments = comments.filter((comment) => !comment.parent_id);
+  // Determine how many comments to show
+  const commentsToShow = showAllComments
+    ? organizedComments
+    : organizedComments.slice(0, commentsPerPage);
+
+  const hasMoreComments = organizedComments.length > commentsPerPage;
 
   if (authLoading) {
     return (
@@ -233,7 +245,6 @@ export default function CommentSection({
           </Link>
         )}
       </div>
-
       {showCommentForm && user && (
         <Card>
           <CardHeader>
@@ -295,8 +306,7 @@ export default function CommentSection({
             </form>
           </CardContent>
         </Card>
-      )}
-
+      )}{" "}
       {organizedComments.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
@@ -312,7 +322,29 @@ export default function CommentSection({
         </div>
       ) : (
         <div className="space-y-6">
-          {organizedComments.map((comment) => renderComment(comment))}
+          <div className="space-y-6">
+            {commentsToShow.map((comment) => renderComment(comment))}
+          </div>
+
+          {/* Show More/Show Less Button */}
+          {hasMoreComments && (
+            <div className="text-center pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowAllComments(!showAllComments)}
+                className="text-sm"
+              >
+                {showAllComments ? (
+                  <>Show Less Comments</>
+                ) : (
+                  <>
+                    Show More Comments (
+                    {organizedComments.length - commentsPerPage} more)
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
