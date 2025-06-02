@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import RoleSwitcher from "@/components/admin/RoleSwitcher";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -108,6 +109,13 @@ export default function Header() {
               <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse" />
             ) : user ? (
               <div className="flex items-center space-x-3">
+                {/* Role Switcher - only for admin users */}
+                {user.role === "admin" && (
+                  <div className="hidden lg:block">
+                    <RoleSwitcher />
+                  </div>
+                )}
+
                 {/* Dashboard Link - visible on all screen sizes for authenticated users */}
                 <Link href="/dashboard">
                   <Button

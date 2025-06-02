@@ -12,6 +12,9 @@ import {
   Tag,
   Layers,
   MessageSquare,
+  Shield,
+  Users,
+  AlertTriangle,
 } from "lucide-react";
 import { useAuthContext } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
@@ -34,7 +37,6 @@ export default function Sidebar() {
       .toUpperCase()
       .slice(0, 2);
   };
-
   const navigation = [
     {
       name: "Dashboard",
@@ -84,6 +86,27 @@ export default function Sidebar() {
       active: pathname.startsWith("/dashboard/settings"),
     },
   ];
+
+  const adminNavigation = [
+    {
+      name: "Admin Dashboard",
+      href: "/dashboard/admin",
+      icon: Shield,
+      active: pathname === "/dashboard/admin",
+    },
+    {
+      name: "User Management",
+      href: "/dashboard/admin/users",
+      icon: Users,
+      active: pathname.startsWith("/dashboard/admin/users"),
+    },
+    {
+      name: "Content Moderation",
+      href: "/dashboard/admin/moderation",
+      icon: AlertTriangle,
+      active: pathname.startsWith("/dashboard/admin/moderation"),
+    },
+  ];
   return (
     <div className="flex h-screen flex-col border-r bg-muted/10">
       {/* <div className="flex h-14 items-center border-b px-4 mt">
@@ -95,11 +118,9 @@ export default function Sidebar() {
           <BookOpen className="h-5 w-5" />
           <span>InkSpace</span>
         </Link>
-      </div> */}
-
+      </div> */}{" "}
       <ScrollArea className="flex-1 px-2 py-4">
         <div className="space-y-1">
-          {" "}
           {navigation.map(
             (item) =>
               item.show !== false && (
@@ -120,9 +141,36 @@ export default function Sidebar() {
                 </Button>
               )
           )}
+
+          {/* Admin Section */}
+          {isAdmin && (
+            <>
+              <div className="pt-4 pb-2">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
+                  Administration
+                </h3>
+              </div>
+              {adminNavigation.map((item) => (
+                <Button
+                  key={item.name}
+                  variant={item.active ? "secondary" : "ghost"}
+                  size="sm"
+                  className={cn(
+                    "w-full justify-start transition-all duration-150 hover:scale-[1.01] active:scale-[0.99]",
+                    item.active && "font-medium"
+                  )}
+                  asChild
+                >
+                  <Link href={item.href} prefetch={true}>
+                    <item.icon className="mr-2 h-4 w-4" />
+                    {item.name}
+                  </Link>
+                </Button>
+              ))}
+            </>
+          )}
         </div>
       </ScrollArea>
-
       {user && (
         <div className="border-t p-4">
           <div className="flex items-center gap-3">
