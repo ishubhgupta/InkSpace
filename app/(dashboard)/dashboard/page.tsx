@@ -47,7 +47,7 @@ export default async function DashboardPage() {
   // Calculate stats
   const { data: stats, error: statsError } = await supabase
     .from("posts")
-    .select("status, views")
+    .select("status, views, reading_time")
     .eq("author_id", user.id);
 
   const totalPosts = stats?.length || 0;
@@ -199,17 +199,23 @@ export default async function DashboardPage() {
               </p>
             ) : comments && comments.length > 0 ? (
               <div className="space-y-4">
-                {comments.map((comment) => (
+                {comments.map((comment: {
+                  id: string;
+                  content: string;
+                  created_at: string;
+                  status: string;
+                  posts: { id: string; title: string; author_id: string } | { id: string; title: string; author_id: string }[];
+                }) => (
                   <div
                     key={comment.id}
                     className="flex justify-between items-start"
                   >
                     <div>
                       <Link
-                        href={`/blog/${comment.posts.id}`}
+                        href={`/blog/${Array.isArray(comment.posts) ? (comment.posts as any[])[0]?.id : (comment.posts as any).id}`}
                         className="text-sm font-medium hover:underline"
                       >
-                        On: {comment.posts.title}
+                        On: {Array.isArray(comment.posts) ? (comment.posts as any[])[0]?.title : (comment.posts as any).title}
                       </Link>
                       <p className="text-xs mt-1">
                         {comment.content.length > 60

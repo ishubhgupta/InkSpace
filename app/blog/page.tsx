@@ -1,38 +1,65 @@
-import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
-import { Metadata } from 'next'
-import Link from 'next/link'
-import Image from 'next/image'
+import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Explore our latest articles and insights.',
-}
+  title: "Blog",
+  description: "Explore our latest articles and insights.",
+};
 
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const cookieStore = cookies()
-  const supabase = createClient(cookieStore)
-  
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
   // Pagination
-  const page = typeof searchParams.page === 'string' ? parseInt(searchParams.page) : 1
-  const pageSize = 9
-  const start = (page - 1) * pageSize
-  const end = start + pageSize - 1
-  
+  const page =
+    typeof searchParams.page === "string" ? parseInt(searchParams.page) : 1;
+  const pageSize = 9;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize - 1;
+
+  // Define types for categories and posts
+  type Category = {
+    id: number;
+    name: string;
+    slug: string;
+    color?: string;
+  };
+  type User = {
+    username: string;
+    full_name?: string;
+    avatar_url?: string;
+  };
+  type Post = {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt?: string;
+    featured_image?: string;
+    published_at?: string;
+    reading_time?: number;
+    category_id?: number;
+    categories: Category | Category[];
+    users: User | User[];
+  };
+
   // Get categories for filter
   const { data: categories } = await supabase
-    .from('categories')
-    .select('id, name, slug')
-    .order('name')
-  
+    .from("categories")
+    .select("id, name, slug, color")
+    .order("name");
+
   // Get posts with pagination
   let query = supabase
-    .from('posts')
-    .select(`
+    .from("posts")
+    .select(
+      `
       id,
       title,
       slug,
@@ -51,60 +78,66 @@ export default async function BlogPage({
         full_name,
         avatar_url
       )
-    `)
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .range(start, end)
-  
+    `,
+      { count: "exact" }
+    )
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .range(start, end);
+
   // Apply category filter if provided
-  if (typeof searchParams.category === 'string') {
-    query = query.eq('categories.slug', searchParams.category)
+  if (typeof searchParams.category === "string") {
+    query = query.eq("categories.slug", searchParams.category);
   }
-  
-  const { data: posts, count } = await query
-  
+
+  const { data: posts, count } = (await query) as {
+    data: Post[] | null;
+    count: number | null;
+  };
+
   // Calculate total pages
-  const totalPages = count ? Math.ceil(count / pageSize) : 0
-  
+  const totalPages = count ? Math.ceil(count / pageSize) : 0;
+
   return (
     <div className="container mx-auto px-4 pt-24 pb-16">
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-bold mb-4">Blog</h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Explore our latest articles, tutorials, and insights on various topics.
+          Explore our latest articles, tutorials, and insights on various
+          topics.
         </p>
       </div>
-      
+
       {/* Category Filters */}
       <div className="flex flex-wrap gap-2 justify-center mb-8">
-        <Link 
+        <Link
           href="/blog"
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-            !searchParams.category 
-              ? 'bg-primary text-primary-foreground' 
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            !searchParams.category
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
           }`}
         >
           All
         </Link>
-        {categories?.map(category => (
-          <Link 
+        {categories?.map((category) => (
+          <Link
             key={category.id}
             href={`/blog?category=${category.slug}`}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              searchParams.category === category.slug 
-                ? 'bg-primary text-primary-foreground' 
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              searchParams.category === category.slug
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             }`}
           >
             {category.name}
           </Link>
         ))}
       </div>
-      
+
       {/* Post Grid */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {posts?.map(post => (
+        {posts?.map((post) => (
           <Link key={post.id} href={`/blog/${post.slug}`}>
             <article className="group overflow-hidden rounded-lg border bg-background shadow-sm transition-all hover:shadow-md">
               <div className="aspect-video relative overflow-hidden">
@@ -122,16 +155,25 @@ export default async function BlogPage({
                 )}
               </div>
               <div className="p-4 md:p-5">
+                {" "}
                 {post.categories && (
                   <div className="mb-2">
-                    <span 
+                    <span
                       className="inline-block px-2 py-1 rounded-md text-xs font-medium"
-                      style={{ 
-                        backgroundColor: `${post.categories.color}20`, 
-                        color: post.categories.color 
+                      style={{
+                        backgroundColor: `${
+                          Array.isArray(post.categories)
+                            ? post.categories[0]?.color || "#6b7280"
+                            : post.categories?.color || "#6b7280"
+                        }20`,
+                        color: Array.isArray(post.categories)
+                          ? post.categories[0]?.color || "#6b7280"
+                          : post.categories?.color || "#6b7280",
                       }}
                     >
-                      {post.categories.name}
+                      {Array.isArray(post.categories)
+                        ? post.categories[0]?.name
+                        : post.categories.name}
                     </span>
                   </div>
                 )}
@@ -146,35 +188,44 @@ export default async function BlogPage({
                 <div className="flex items-center gap-x-4">
                   <div className="flex items-center gap-x-2">
                     <div className="relative h-6 w-6 rounded-full overflow-hidden">
-                      {post.users.avatar_url ? (
+                      {Array.isArray(post.users) &&
+                      post.users[0]?.avatar_url ? (
                         <Image
-                          src={post.users.avatar_url}
-                          alt={post.users.full_name || post.users.username}
+                          src={post.users[0].avatar_url}
+                          alt={
+                            post.users[0].full_name || post.users[0].username
+                          }
                           fill
                           className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
-                          {post.users.full_name?.[0] || post.users.username[0]}
+                          {Array.isArray(post.users)
+                            ? post.users[0]?.full_name?.[0] ||
+                              post.users[0]?.username?.[0] ||
+                              ""
+                            : ""}
                         </div>
                       )}
                     </div>
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">
-                        {post.users.full_name || post.users.username}
-                      </span>
-                    </div>
+                    <span className="text-muted-foreground">
+                      {Array.isArray(post.users)
+                        ? post.users[0]?.full_name || post.users[0]?.username
+                        : ""}
+                    </span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    <time dateTime={post.published_at || ''}>
-                      {post.published_at 
-                        ? new Date(post.published_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })
-                        : 'Unpublished'
-                      }
+                    <time dateTime={post.published_at || ""}>
+                      {post.published_at
+                        ? new Date(post.published_at).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )
+                        : "Unpublished"}
                     </time>
                     <span> · </span>
                     <span>{post.reading_time} min read</span>
@@ -189,45 +240,58 @@ export default async function BlogPage({
           <div className="col-span-full py-12 text-center">
             <h3 className="text-lg font-medium mb-2">No posts found</h3>
             <p className="text-muted-foreground">
-              {searchParams.category 
+              {searchParams.category
                 ? `No posts in this category yet. Check back soon or browse other categories.`
-                : `No posts available yet. Check back soon!`
-              }
+                : `No posts available yet. Check back soon!`}
             </p>
           </div>
         )}
       </div>
-      
+
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-12">
           <div className="flex space-x-2">
             {page > 1 && (
-              <Link 
-                href={`/blog?page=${page - 1}${searchParams.category ? `&category=${searchParams.category}` : ''}`}
+              <Link
+                href={`/blog?page=${page - 1}${
+                  searchParams.category
+                    ? `&category=${searchParams.category}`
+                    : ""
+                }`}
                 className="px-4 py-2 rounded-md border hover:bg-muted transition-colors"
               >
                 Previous
               </Link>
             )}
-            
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-              <Link 
-                key={pageNum}
-                href={`/blog?page=${pageNum}${searchParams.category ? `&category=${searchParams.category}` : ''}`}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  pageNum === page
-                    ? 'bg-primary text-primary-foreground'
-                    : 'border hover:bg-muted'
-                }`}
-              >
-                {pageNum}
-              </Link>
-            ))}
-            
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (pageNum) => (
+                <Link
+                  key={pageNum}
+                  href={`/blog?page=${pageNum}${
+                    searchParams.category
+                      ? `&category=${searchParams.category}`
+                      : ""
+                  }`}
+                  className={`px-4 py-2 rounded-md transition-colors ${
+                    pageNum === page
+                      ? "bg-primary text-primary-foreground"
+                      : "border hover:bg-muted"
+                  }`}
+                >
+                  {pageNum}
+                </Link>
+              )
+            )}
+
             {page < totalPages && (
-              <Link 
-                href={`/blog?page=${page + 1}${searchParams.category ? `&category=${searchParams.category}` : ''}`}
+              <Link
+                href={`/blog?page=${page + 1}${
+                  searchParams.category
+                    ? `&category=${searchParams.category}`
+                    : ""
+                }`}
                 className="px-4 py-2 rounded-md border hover:bg-muted transition-colors"
               >
                 Next
@@ -237,5 +301,5 @@ export default async function BlogPage({
         </div>
       )}
     </div>
-  )
+  );
 }

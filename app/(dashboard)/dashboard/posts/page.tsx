@@ -93,14 +93,16 @@ export default async function PostsPage() {
                       <Badge className={getStatusColor(post.status)}>
                         {post.status}
                       </Badge>
-                      {post.categories && (
-                        <Badge
-                          variant="outline"
-                          style={{ borderColor: post.categories.color }}
-                        >
-                          {post.categories.name}
-                        </Badge>
-                      )}
+                      {Array.isArray(post.categories) &&
+                        post.categories.map((category, idx) => (
+                          <Badge
+                            key={idx}
+                            variant="outline"
+                            style={{ borderColor: category.color }}
+                          >
+                            {category.name}
+                          </Badge>
+                        ))}
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>

@@ -28,13 +28,11 @@ export function useAuth() {
         toast({
           title: "Welcome back!",
           description: "You've been successfully signed in.",
-        });
-
-        // Optimistic redirect for smoother UX
+        }); // Optimistic redirect for smoother UX
         router.push("/dashboard");
 
-        // Refresh in background after redirect
-        setTimeout(() => router.refresh(), 100);
+        // Minimal refresh delay to allow navigation to complete
+        setTimeout(() => router.refresh(), 500);
 
         return { success: true, user: data.user };
       } catch (err: any) {
@@ -83,14 +81,12 @@ export function useAuth() {
           title: "Account created successfully!",
           description:
             "Welcome to InkSpace! You can now start creating blog posts.",
-        });
-
-        // User profile will be automatically created by the handle_new_user() trigger
+        }); // User profile will be automatically created by the handle_new_user() trigger
         // Optimistic redirect
         router.push("/dashboard");
 
-        // Refresh in background
-        setTimeout(() => router.refresh(), 100);
+        // Minimal refresh delay to allow navigation to complete
+        setTimeout(() => router.refresh(), 500);
 
         return { success: true, user: authData.user };
       } catch (err: any) {
@@ -120,16 +116,14 @@ export function useAuth() {
       toast({
         title: "Signed out successfully",
         description: "Come back soon!",
-      });
-
-      // Optimistic navigation first for immediate feedback
+      }); // Optimistic navigation first for immediate feedback
       router.push("/");
 
       // Sign out in background
       await supabase.auth.signOut();
 
-      // Refresh to clear any cached data
-      setTimeout(() => router.refresh(), 100);
+      // Refresh to clear any cached data - with longer delay
+      setTimeout(() => router.refresh(), 500);
 
       return { success: true };
     } catch (err: any) {

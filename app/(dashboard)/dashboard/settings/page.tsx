@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Metadata } from "next";
-import SettingsEditor from "@/components/editor/SettingsEditor";
+// Update the import path below if the actual location is different, e.g. "@/components/SettingsEditor" or a relative path like "../../components/editor/SettingsEditor"
+import SettingsEditor from "../../../../components/editor/SettingsEditor";
 
 export const metadata: Metadata = {
   title: "Settings - Dashboard",

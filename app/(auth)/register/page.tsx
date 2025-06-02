@@ -1,10 +1,10 @@
-import RegisterForm from '@/components/auth/RegisterForm'
-import { Metadata } from 'next'
+import RegisterForm from "@/components/auth/RegisterForm";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Register',
-  description: 'Create a new NextBlog account.',
-}
+  title: "Register",
+  description: "Create a new InkSpace account.",
+};
 
 export default function RegisterPage() {
   return (
@@ -13,5 +13,5 @@ export default function RegisterPage() {
         <RegisterForm />
       </div>
     </div>
-  )
+  );
 }

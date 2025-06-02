@@ -6,28 +6,30 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function AuthLoadingOverlay() {
-  const { isLoading, user } = useAuthContext();
+  const { isLoading } = useAuthContext();
   const [showOverlay, setShowOverlay] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     if (isLoading) {
-      setShowOverlay(true);
-    } else {
-      // Delay hiding overlay slightly for smoother transition
+      // Add a small delay before showing the overlay to prevent flashes
       const timer = setTimeout(() => {
-        setShowOverlay(false);
-      }, 200);
+        setShowOverlay(true);
+      }, 100);
       return () => clearTimeout(timer);
+    } else {
+      // Hide overlay immediately when loading is done
+      setShowOverlay(false);
     }
   }, [isLoading]);
 
-  // Don't show overlay on auth pages
+  // Don't show overlay on auth pages or if loading is very brief
   if (pathname.includes("/login") || pathname.includes("/register")) {
     return null;
   }
 
-  if (!showOverlay) {
+  // Only show if explicitly loading and we've waited a bit
+  if (!showOverlay || !isLoading) {
     return null;
   }
 

@@ -1,10 +1,10 @@
-import LoginForm from '@/components/auth/LoginForm'
-import { Metadata } from 'next'
+import LoginForm from "@/components/auth/LoginForm";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Login',
-  description: 'Login to your NextBlog account.',
-}
+  title: "Login",
+  description: "Login to your InkSpace account.",
+};
 
 export default function LoginPage() {
   return (
@@ -13,5 +13,5 @@ export default function LoginPage() {
         <LoginForm />
       </div>
     </div>
-  )
+  );
 }

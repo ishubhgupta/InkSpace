@@ -12,8 +12,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "NextBlog - Modern Blog Platform",
-    template: "%s | NextBlog",
+    default: "InkSpace - Modern Blog Platform",
+    template: "%s | InkSpace",
   },
   description:
     "A modern blog platform built with Next.js, TypeScript, and Supabase.",
@@ -21,19 +21,19 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: "NextBlog",
+    siteName: "InkSpace",
     images: [
       {
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
-        alt: "NextBlog - Modern Blog Platform",
+        alt: "InkSpace - Modern Blog Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NextBlog - Modern Blog Platform",
+    title: "InkSpace - Modern Blog Platform",
     description:
       "A modern blog platform built with Next.js, TypeScript, and Supabase.",
     images: [`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.jpg`],

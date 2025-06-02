@@ -69,7 +69,17 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   // Transform post data for editor
   const postForEditor = {
     ...post,
-    tags: post.post_tags?.map(pt => ({ id: pt.tags.id, name: pt.tags.name })) || []
+    tags: post.post_tags?.map((pt: { tags: { id: string; name: string } | { id: string; name: string }[] }) => {
+      // Handle if pt.tags is an array or an object
+      if (Array.isArray(pt.tags)) {
+        // If it's an array, map each tag object
+        return pt.tags.map((tag: { id: string; name: string }) => ({ id: tag.id, name: tag.name }))
+      } else if (pt.tags) {
+        // If it's a single object
+        return { id: pt.tags.id, name: pt.tags.name }
+      }
+      return null
+    }).flat().filter(Boolean) || []
   }
 
   return (
