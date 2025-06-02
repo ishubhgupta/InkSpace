@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Blog content
+Allow: /blog/
+Allow: /blog/*/
+
+# Static assets
+Allow: /favicon.ico
+Allow: /icon.svg
+Allow: /apple-icon.svg
+Allow: /manifest.json
+
+# Disallow admin areas (only allow authenticated access)
+Disallow: /dashboard/admin/
+
+# Sitemap
+Sitemap: https://inkspace.vercel.app/sitemap.xml

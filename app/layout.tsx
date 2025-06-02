@@ -17,6 +17,17 @@ export const metadata: Metadata = {
   },
   description:
     "A modern blog platform built with Next.js, TypeScript, and Supabase.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16", type: "image/x-icon" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-icon.svg", sizes: "180x180", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+  },
+  manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "en_US",

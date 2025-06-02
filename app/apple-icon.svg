@@ -1,0 +1,19 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="180" height="180" rx="40" fill="#1f2937"/>
+  
+  <!-- Ink pen/quill -->
+  <path d="M45 135L72.5 107.5L112.5 67.5L135 45L112.5 22.5L90 45L50.5 84.5L22.5 112.5L45 135Z" fill="#60a5fa"/>
+  <path d="M72.5 107.5L95 85" stroke="#1e40af" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Ink drop -->
+  <circle cx="56.25" cy="123.75" r="8.25" fill="#3b82f6"/>
+  
+  <!-- Writing lines -->
+  <path d="M135 112.5H157.5" stroke="#6b7280" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M123.75 135H157.5" stroke="#6b7280" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M112.5 157.5H157.5" stroke="#6b7280" stroke-width="4.5" stroke-linecap="round"/>
+  
+  <!-- InkSpace text -->
+  <text x="90" y="170" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#9ca3af">InkSpace</text>
+</svg>

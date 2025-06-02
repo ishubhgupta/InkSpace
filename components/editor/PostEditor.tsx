@@ -16,7 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import RichTextEditor from "./RichTextEditor";
 import { usePosts } from "@/lib/hooks/usePosts";
-import { useFileUpload } from "@/lib/hooks/useFileUpload";
+import { useFileUpload } from "@/lib/hooks/useFileUploadEnhanced";
+import ImageUploadInfo from "@/components/ui/ImageUploadInfo";
 import { PostFormData, PostStatus } from "@/types/blog";
 import { useAuthContext } from "@/components/auth/AuthProvider";
 import { useRouter } from "next/navigation";
@@ -41,7 +42,8 @@ export default function PostEditor({
     isLoading: isSaving,
     error: postsError,
   } = usePosts();
-  const { uploadFile, isUploading, uploadProgress } = useFileUpload();
+  const { uploadFile, isUploading, uploadProgress, compressionInfo } =
+    useFileUpload();
   const router = useRouter();
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -82,12 +84,11 @@ export default function PostEditor({
   const [htmlContent, setHtmlContent] = useState<string>(
     getContentAsHtml(post?.content)
   );
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const imageUrl = await uploadFile(file);
+    const imageUrl = await uploadFile(file, "blog", post?.id);
     if (imageUrl) {
       setFormData((prev) => ({ ...prev, featured_image: imageUrl }));
     }
@@ -244,6 +245,7 @@ export default function PostEditor({
               <div>
                 <Label htmlFor="content">Content</Label>
                 <div className="mt-1">
+                  {" "}
                   <RichTextEditor
                     content={htmlContent}
                     onChange={(content) => {
@@ -252,6 +254,7 @@ export default function PostEditor({
                     }}
                     placeholder="Write your post content here..."
                     className="min-h-[400px]"
+                    postId={post?.id}
                   />
                 </div>
               </div>
@@ -305,11 +308,19 @@ export default function PostEditor({
                         Uploading... {uploadProgress}%
                       </div>
                     </div>
-                  )}
+                  )}{" "}
                 </div>
               )}
             </CardContent>
           </Card>
+
+          {/* Image Upload Info */}
+          <ImageUploadInfo
+            type="blog"
+            compressionInfo={compressionInfo}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+          />
 
           <Card>
             <CardHeader>

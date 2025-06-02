@@ -1,26 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { storageService } from "@/lib/supabase/storage";
+import { storageService } from "@/lib/supabase/storageEnhanced";
 
 export function useFileUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [compressionInfo, setCompressionInfo] = useState<{
+    wasCompressed: boolean;
+    originalSize: string;
+    newSize: string;
+  } | null>(null);
 
-  const uploadFile = async (file: File): Promise<string | null> => {
+  const uploadFile = async (
+    file: File,
+    type: "profile" | "blog" = "blog",
+    postId?: string
+  ): Promise<string | null> => {
     try {
       setIsUploading(true);
       setError(null);
       setUploadProgress(0);
+      setCompressionInfo(null);
 
       // Progress simulation since Supabase doesn't provide real-time progress
       setUploadProgress(25);
 
-      const fileUrl = await storageService.uploadImage(file);
+      const result = await storageService.uploadImage(file, type, postId);
 
       setUploadProgress(100);
-      return fileUrl;
+      setCompressionInfo({
+        wasCompressed: result.wasCompressed,
+        originalSize: result.originalSize,
+        newSize: result.newSize,
+      });
+
+      return result.url;
     } catch (err: any) {
       setError(err.message || "Failed to upload file");
       return null;
@@ -46,5 +62,6 @@ export function useFileUpload() {
     isUploading,
     uploadProgress,
     error,
+    compressionInfo,
   };
 }
