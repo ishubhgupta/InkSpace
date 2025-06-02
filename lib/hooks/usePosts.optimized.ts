@@ -9,8 +9,6 @@ import { slugify } from "../utils/slugify";
 import {
   validateAndProcessContent,
   validatePostMetadata,
-  sanitizeCopyPastedContent,
-  detectCopyPastedContent,
 } from "../utils/content-processor";
 
 // Configuration for robust publishing
@@ -76,68 +74,36 @@ export function usePosts() {
     try {
       setIsLoading(true);
       setError(null);
+
       console.log("Starting post creation...", {
         title: data.title,
         status: data.status,
       });
 
-      // Calculate timeout based on content size
+      // Calculate content size for timeout optimization
       const contentText =
         typeof data.content === "string"
           ? data.content
           : JSON.stringify(data.content);
-      const dynamicTimeout = calculateTimeout(contentText.length);
+      const contentSize = contentText.length;
+      const isLargeContent = contentSize > LARGE_CONTENT_THRESHOLD;
+      const timeout = calculateTimeout(contentSize);
 
-      console.log(
-        `Using dynamic timeout: ${dynamicTimeout}ms for content size: ${contentText.length} bytes`
-      );
+      console.log("Content analysis:", {
+        size: contentSize,
+        isLarge: isLargeContent,
+        timeout: timeout / 1000 + "s",
+      });
 
       const result = await withTimeout(
         withRetry(async () => {
-          // Detect and handle copy-pasted content first
-          const pasteDetection = detectCopyPastedContent(contentText);
-          if (pasteDetection.isPasted) {
-            console.log(
-              `Copy-pasted content detected from: ${pasteDetection.sources.join(
-                ", "
-              )} (confidence: ${Math.round(pasteDetection.confidence * 100)}%)`
-            );
-          }
+          // For large content, skip intensive validation to speed up publishing
+          let processedContent = contentText;
+          let readingTime = calculateReadingTime(contentText);
 
-          // Pre-sanitize copy-pasted content to prevent publishing issues
-          let processedContent = pasteDetection.isPasted
-            ? sanitizeCopyPastedContent(contentText)
-            : contentText;
-
-          if (
-            pasteDetection.isPasted &&
-            processedContent.length !== contentText.length
-          ) {
-            console.log(
-              `Content sanitized: ${contentText.length} → ${processedContent.length} bytes`
-            );
-          }
-
-          // For very large content, use fast processing to avoid timeouts
-          const isLargeContent =
-            processedContent.length > LARGE_CONTENT_THRESHOLD;
-
-          let contentValidation: any = {
-            isValid: true,
-            warnings: [],
-            errors: [],
-          };
-
-          if (isLargeContent) {
-            console.log("Large content detected, using fast processing...");
-            // For large content, just remove scripts for safety without full validation
-            processedContent = processedContent.replace(
-              /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-              ""
-            );
-          } else {
-            // Full validation for smaller content
-            contentValidation = validateAndProcessContent(processedContent, {
+          if (!isLargeContent) {
+            // Only do full validation for smaller content
+            const contentValidation = validateAndProcessContent(contentText, {
               sanitize: true,
               validateSize: true,
               stripEmptyTags: true,
@@ -151,11 +117,25 @@ export function usePosts() {
               );
             }
 
+            if (contentValidation.warnings.length > 0) {
+              console.warn(
+                "Content validation warnings:",
+                contentValidation.warnings
+              );
+            }
+
             processedContent =
-              contentValidation.processedContent || processedContent;
+              contentValidation.processedContent || contentText;
+          } else {
+            console.log("Skipping intensive validation for large content");
+            // Basic sanitization only for large content
+            processedContent = contentText.replace(
+              /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+              ""
+            );
           }
 
-          // Validate metadata
+          // Always validate metadata regardless of content size
           const metadataValidation = validatePostMetadata({
             title: data.title,
             excerpt: data.excerpt || undefined,
@@ -169,25 +149,9 @@ export function usePosts() {
             );
           }
 
-          // Log warnings if any
-          if (contentValidation.warnings.length > 0) {
-            console.warn(
-              "Content validation warnings:",
-              contentValidation.warnings
-            );
-          }
-          if (metadataValidation.warnings.length > 0) {
-            console.warn(
-              "Metadata validation warnings:",
-              metadataValidation.warnings
-            );
-          }
-
           // Generate slug if not provided
           const slug = data.title ? slugify(data.title) : "";
 
-          // Calculate reading time
-          const readingTime = calculateReadingTime(processedContent);
           console.log("Inserting post into database...", {
             slug,
             readingTime,
@@ -224,7 +188,7 @@ export function usePosts() {
 
           console.log("Post created successfully:", postData.id);
 
-          // Add tags if provided (non-blocking - won't fail post creation)
+          // Add tags if provided (with timeout protection)
           if (data.tags && data.tags.length > 0) {
             console.log("Adding tags...", data.tags);
 
@@ -239,23 +203,22 @@ export function usePosts() {
                 .insert(postTags);
 
               if (tagsError) {
+                console.error("Tags insertion error:", tagsError);
+                // Don't fail the entire post creation for tag errors
                 console.warn(
-                  "Tags insertion failed (non-blocking):",
-                  tagsError
+                  "Failed to add tags, but post was created successfully"
                 );
-                // Don't throw - let post creation succeed even if tags fail
               } else {
                 console.log("Tags added successfully");
               }
             } catch (tagError) {
-              console.warn("Tag insertion failed (non-blocking):", tagError);
-              // Don't throw - let post creation succeed
+              console.warn("Tag insertion failed but continuing:", tagError);
             }
           }
 
           return postData;
         }),
-        dynamicTimeout
+        timeout
       );
 
       console.log("Post creation completed successfully");
@@ -276,23 +239,22 @@ export function usePosts() {
     try {
       setIsLoading(true);
       setError(null);
+
       console.log("Starting post update...", {
         id,
         title: data.title,
         status: data.status,
       });
 
-      // Calculate timeout based on content size
+      // Calculate content size for timeout optimization
       const contentText = data.content
         ? typeof data.content === "string"
           ? data.content
           : JSON.stringify(data.content)
         : "";
-      const dynamicTimeout = calculateTimeout(contentText.length);
-
-      console.log(
-        `Using dynamic timeout: ${dynamicTimeout}ms for content size: ${contentText.length} bytes`
-      );
+      const contentSize = contentText.length;
+      const isLargeContent = contentSize > LARGE_CONTENT_THRESHOLD;
+      const timeout = calculateTimeout(contentSize);
 
       const result = await withTimeout(
         withRetry(async () => {
@@ -301,54 +263,12 @@ export function usePosts() {
           let readingTime = undefined;
 
           if (data.content) {
-            // Detect and handle copy-pasted content first
-            const pasteDetection = detectCopyPastedContent(contentText);
-            if (pasteDetection.isPasted) {
-              console.log(
-                `Copy-pasted content detected from: ${pasteDetection.sources.join(
-                  ", "
-                )} (confidence: ${Math.round(
-                  pasteDetection.confidence * 100
-                )}%)`
-              );
-            }
-
-            // Pre-sanitize copy-pasted content to prevent publishing issues
-            processedContent = pasteDetection.isPasted
-              ? sanitizeCopyPastedContent(contentText)
-              : contentText;
-
-            if (
-              pasteDetection.isPasted &&
-              String(processedContent).length !== contentText.length
-            ) {
-              console.log(
-                `Content sanitized: ${contentText.length} → ${
-                  String(processedContent).length
-                } bytes`
-              );
-            }
-
-            const isLargeContent =
-              String(processedContent).length > LARGE_CONTENT_THRESHOLD;
-
-            if (isLargeContent) {
-              console.log("Large content detected, using fast processing...");
-              // For large content, just remove scripts for safety without full validation
-              processedContent = String(processedContent).replace(
-                /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-                ""
-              );
-            } else {
-              // Full validation for smaller content
-              const contentValidation = validateAndProcessContent(
-                String(processedContent),
-                {
-                  sanitize: true,
-                  validateSize: true,
-                  stripEmptyTags: true,
-                }
-              );
+            if (!isLargeContent) {
+              const contentValidation = validateAndProcessContent(contentText, {
+                sanitize: true,
+                validateSize: true,
+                stripEmptyTags: true,
+              });
 
               if (!contentValidation.isValid) {
                 throw new Error(
@@ -367,9 +287,18 @@ export function usePosts() {
 
               processedContent =
                 contentValidation.processedContent || contentText;
+            } else {
+              console.log(
+                "Skipping intensive validation for large content update"
+              );
+              // Basic sanitization only
+              processedContent = contentText.replace(
+                /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+                ""
+              );
             }
 
-            readingTime = calculateReadingTime(processedContent);
+            readingTime = calculateReadingTime(String(processedContent));
           }
 
           // Validate metadata if title is provided
@@ -404,6 +333,7 @@ export function usePosts() {
             contentLength: processedContent
               ? String(processedContent).length
               : 0,
+            isLargeContent,
           });
 
           const { error: postError, data: postData } = await supabase
@@ -432,7 +362,7 @@ export function usePosts() {
 
           console.log("Post updated successfully");
 
-          // Update tags if provided (non-blocking)
+          // Update tags if provided (with error tolerance)
           if (data.tags !== undefined) {
             console.log("Updating tags...", data.tags);
 
@@ -444,10 +374,9 @@ export function usePosts() {
                 .eq("post_id", id);
 
               if (deleteError) {
-                console.warn(
-                  "Tags deletion failed (non-blocking):",
-                  deleteError
-                );
+                console.error("Tags deletion error:", deleteError);
+                // Don't fail the update for tag deletion errors
+                console.warn("Failed to delete existing tags, but continuing");
               }
 
               // Then add new tags
@@ -462,23 +391,23 @@ export function usePosts() {
                   .insert(postTags);
 
                 if (tagsError) {
+                  console.error("Tags insertion error:", tagsError);
+                  // Don't fail the update for tag insertion errors
                   console.warn(
-                    "Tags insertion failed (non-blocking):",
-                    tagsError
+                    "Failed to add new tags, but post was updated successfully"
                   );
                 } else {
                   console.log("Tags updated successfully");
                 }
               }
             } catch (tagError) {
-              console.warn("Tag update failed (non-blocking):", tagError);
-              // Don't throw - let post update succeed
+              console.warn("Tag update failed but continuing:", tagError);
             }
           }
 
           return postData;
         }),
-        dynamicTimeout
+        timeout
       );
 
       console.log("Post update completed successfully");
@@ -502,9 +431,6 @@ export function usePosts() {
 
       console.log("Starting post deletion...", { id });
 
-      // Use a shorter timeout for deletion operations
-      const deleteTimeout = BASE_TIMEOUT; // 15 seconds should be enough for deletion
-
       const result = await withTimeout(
         withRetry(async () => {
           const { error } = await supabase.from("posts").delete().eq("id", id);
@@ -517,7 +443,7 @@ export function usePosts() {
           console.log("Post deleted successfully");
           return true;
         }),
-        deleteTimeout
+        BASE_TIMEOUT // Use base timeout for deletion
       );
 
       router.refresh();
