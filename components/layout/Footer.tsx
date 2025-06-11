@@ -21,6 +21,7 @@ export default function Footer() {
               A modern blog platform built with Next.js, TypeScript, and
               Supabase.
             </p>
+            <p className="text-xs mt-1">Made with bolt.new</p>
           </div>
 
           <div className="md:col-span-1">
@@ -124,6 +125,7 @@ export default function Footer() {
 
         <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground text-sm">
           <p>&copy; {currentYear} InkSpace. All rights reserved.</p>
+          
         </div>
       </div>
     </footer>

@@ -23,7 +23,6 @@ import { useAuthContext } from "@/components/auth/AuthProvider";
 import { useRouter } from "next/navigation";
 import { Upload, X, Loader2, Save, Eye } from "lucide-react";
 import Image from "next/image";
-import { detectCopyPastedContent } from "@/lib/utils/content-processor";
 
 interface PostEditorProps {
   post?: any;
@@ -79,17 +78,11 @@ export default function PostEditor({
   const [selectedTags, setSelectedTags] = useState<string[]>(
     post?.tags?.map((t: any) => t.id) || []
   );
+
   // State to track HTML content for the editor
   const [htmlContent, setHtmlContent] = useState<string>(
     getContentAsHtml(post?.content)
   );
-
-  // State to track copy-paste detection
-  const [pasteInfo, setPasteInfo] = useState<{
-    detected: boolean;
-    sources: string[];
-    confidence: number;
-  } | null>(null);
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -98,7 +91,7 @@ export default function PostEditor({
     if (imageUrl) {
       setFormData((prev) => ({ ...prev, featured_image: imageUrl }));
     }
-  }; // State for publishing feedback
+  };  // State for publishing feedback
   const [publishingStatus, setPublishingStatus] = useState<{
     isPublishing: boolean;
     currentStep: string;
@@ -106,28 +99,28 @@ export default function PostEditor({
     estimatedTime?: number;
   }>({
     isPublishing: false,
-    currentStep: "",
-    progress: 0,
+    currentStep: '',
+    progress: 0
   });
 
   // Calculate estimated publish time based on content size
   const getEstimatedPublishTime = (content: string): number => {
-    const size = content.length;
-    if (size < 10000) return 5; // Small content: 5 seconds
-    if (size < 50000) return 15; // Medium content: 15 seconds
-    if (size < 200000) return 30; // Large content: 30 seconds
-    return 60; // Very large content: 60 seconds
-  };
+    const size = content.length
+    if (size < 10000) return 5 // Small content: 5 seconds
+    if (size < 50000) return 15 // Medium content: 15 seconds  
+    if (size < 200000) return 30 // Large content: 30 seconds
+    return 60 // Very large content: 60 seconds
+  }
 
   const handleSubmit = async (status: PostStatus) => {
     setLocalError(null); // Clear any previous errors
-
-    const estimatedTime = getEstimatedPublishTime(htmlContent);
-    setPublishingStatus({
-      isPublishing: true,
-      currentStep: "Analyzing content...",
+    
+    const estimatedTime = getEstimatedPublishTime(htmlContent)
+    setPublishingStatus({ 
+      isPublishing: true, 
+      currentStep: 'Analyzing content...', 
       progress: 0,
-      estimatedTime,
+      estimatedTime 
     });
 
     try {
@@ -141,36 +134,22 @@ export default function PostEditor({
 
       if (status === "published" && !hasContent(htmlContent)) {
         throw new Error("Please add some content before publishing");
-      }
-      const contentSize = htmlContent.length;
-      const isLargeContent = contentSize > 50000; // 50KB threshold
-
-      // Check for copy-pasted content and provide appropriate feedback
-      const pasteDetection = detectCopyPastedContent(htmlContent);
-      if (pasteDetection.isPasted) {
-        setPublishingStatus({
-          isPublishing: true,
-          currentStep: `Processing content from ${pasteDetection.sources.join(
-            ", "
-          )} - applying advanced sanitization...`,
+      }      const contentSize = htmlContent.length
+      const isLargeContent = contentSize > 50000 // 50KB threshold
+      
+      if (isLargeContent) {
+        setPublishingStatus({ 
+          isPublishing: true, 
+          currentStep: `Processing large content (${Math.round(contentSize / 1024)}KB) - optimized for speed...`, 
           progress: 10,
-          estimatedTime,
-        });
-      } else if (isLargeContent) {
-        setPublishingStatus({
-          isPublishing: true,
-          currentStep: `Processing large content (${Math.round(
-            contentSize / 1024
-          )}KB) - optimized for speed...`,
-          progress: 10,
-          estimatedTime,
+          estimatedTime 
         });
       } else {
-        setPublishingStatus({
-          isPublishing: true,
-          currentStep: "Preparing content...",
+        setPublishingStatus({ 
+          isPublishing: true, 
+          currentStep: 'Preparing content...', 
           progress: 20,
-          estimatedTime,
+          estimatedTime 
         });
       }
 
@@ -184,46 +163,46 @@ export default function PostEditor({
         tags: selectedTags,
       };
 
-      setPublishingStatus({
-        isPublishing: true,
-        currentStep: "Saving to database...",
+      setPublishingStatus({ 
+        isPublishing: true, 
+        currentStep: 'Saving to database...', 
         progress: 50,
-        estimatedTime,
+        estimatedTime 
       });
 
       let success = false;
       if (post?.id) {
-        setPublishingStatus({
-          isPublishing: true,
-          currentStep: "Updating post...",
+        setPublishingStatus({ 
+          isPublishing: true, 
+          currentStep: 'Updating post...', 
           progress: 70,
-          estimatedTime,
+          estimatedTime 
         });
         success = await updatePost(post.id, submitData);
       } else {
-        setPublishingStatus({
-          isPublishing: true,
-          currentStep: "Creating post...",
+        setPublishingStatus({ 
+          isPublishing: true, 
+          currentStep: 'Creating post...', 
           progress: 70,
-          estimatedTime,
+          estimatedTime 
         });
         success = await createPost(submitData, user.id);
       }
 
       if (success) {
-        setPublishingStatus({
-          isPublishing: true,
-          currentStep: "Finalizing...",
+        setPublishingStatus({ 
+          isPublishing: true, 
+          currentStep: 'Finalizing...', 
           progress: 95,
-          estimatedTime,
+          estimatedTime 
         });
-
+        
         // Small delay to show completion before redirect
         setTimeout(() => {
-          setPublishingStatus({
-            isPublishing: false,
-            currentStep: "",
-            progress: 100,
+          setPublishingStatus({ 
+            isPublishing: false, 
+            currentStep: '', 
+            progress: 100 
           });
           router.push("/dashboard/posts");
         }, 1000);
@@ -231,13 +210,9 @@ export default function PostEditor({
         throw new Error("Failed to save post. Please try again.");
       }
     } catch (error: any) {
-      console.error("Post submission error:", error);
+      console.error('Post submission error:', error);
       setLocalError(error.message || "An error occurred while saving the post");
-      setPublishingStatus({
-        isPublishing: false,
-        currentStep: "",
-        progress: 0,
-      });
+      setPublishingStatus({ isPublishing: false, currentStep: '', progress: 0 });
     }
   };
   const toggleTag = (tagId: string) => {
@@ -247,6 +222,7 @@ export default function PostEditor({
         : [...prev, tagId]
     );
   };
+
   // Helper function to check if content has meaningful text
   const hasContent = (content: string): boolean => {
     if (!content || !content.trim()) return false;
@@ -260,29 +236,6 @@ export default function PostEditor({
     return textContent.length > 0;
   };
 
-  // Handler for content changes with copy-paste detection
-  const handleContentChange = (content: string) => {
-    setHtmlContent(content);
-    setFormData((prev) => ({ ...prev, content }));
-
-    // Detect copy-pasted content and provide feedback
-    if (content && content.length > 100) {
-      // Only check substantial content
-      const detection = detectCopyPastedContent(content);
-      if (detection.isPasted && detection.confidence > 0.3) {
-        setPasteInfo({
-          detected: true,
-          sources: detection.sources,
-          confidence: detection.confidence,
-        });
-      } else {
-        setPasteInfo(null);
-      }
-    } else {
-      setPasteInfo(null);
-    }
-  };
-
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="flex justify-between items-center mb-6">
@@ -290,13 +243,12 @@ export default function PostEditor({
           {post ? "Edit Post" : "Create New Post"}
         </h1>{" "}
         <div className="flex gap-2">
-          {" "}
-          <Button
+          {" "}          <Button
             variant="outline"
             onClick={() => handleSubmit("draft")}
             disabled={
-              publishingStatus.isPublishing ||
-              isSaving ||
+              publishingStatus.isPublishing || 
+              isSaving || 
               !formData.title.trim()
             }
             className="transition-all duration-200 hover:scale-105 active:scale-95 disabled:hover:scale-100"
@@ -304,7 +256,7 @@ export default function PostEditor({
             {publishingStatus.isPublishing || isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {publishingStatus.currentStep || "Saving..."}
+                {publishingStatus.currentStep || 'Saving...'}
               </>
             ) : (
               <>
@@ -317,8 +269,8 @@ export default function PostEditor({
             onClick={() => handleSubmit("published")}
             disabled={
               publishingStatus.isPublishing ||
-              isSaving ||
-              !formData.title.trim() ||
+              isSaving || 
+              !formData.title.trim() || 
               !hasContent(htmlContent)
             }
             className="transition-all duration-200 hover:scale-105 active:scale-95 disabled:hover:scale-100"
@@ -326,7 +278,7 @@ export default function PostEditor({
             {publishingStatus.isPublishing || isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {publishingStatus.currentStep || "Publishing..."}
+                {publishingStatus.currentStep || 'Publishing...'}
               </>
             ) : (
               <>
@@ -336,37 +288,31 @@ export default function PostEditor({
             )}
           </Button>
         </div>
-      </div>{" "}
-      {error && (
+      </div>      {error && (
         <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-6">
           {error}
         </div>
-      )}{" "}
-      {publishingStatus.isPublishing && (
+      )}      {publishingStatus.isPublishing && (
         <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-md mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="font-medium">{publishingStatus.currentStep}</span>
             <span className="text-xs">{publishingStatus.progress}%</span>
-          </div>{" "}
-          <div className="w-full bg-blue-200 rounded-full h-2">
-            <div
+          </div>          <div className="w-full bg-blue-200 rounded-full h-2">
+            <div 
               className={`bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out ${
-                publishingStatus.progress >= 100
-                  ? "w-full"
-                  : publishingStatus.progress >= 75
-                  ? "w-3/4"
-                  : publishingStatus.progress >= 50
-                  ? "w-1/2"
-                  : publishingStatus.progress >= 25
-                  ? "w-1/4"
-                  : "w-0"
+                publishingStatus.progress >= 100 ? 'w-full' : 
+                publishingStatus.progress >= 75 ? 'w-3/4' :
+                publishingStatus.progress >= 50 ? 'w-1/2' :
+                publishingStatus.progress >= 25 ? 'w-1/4' :
+                'w-0'
               }`}
             ></div>
           </div>
           <p className="text-xs mt-2 opacity-75">
-            {htmlContent.length > 50000
-              ? "Large content detected - using fast-track processing for optimal performance..."
-              : "Please don't close this page while your post is being published..."}
+            {htmlContent.length > 50000 
+              ? 'Large content detected - using fast-track processing for optimal performance...'
+              : 'Please don\'t close this page while your post is being published...'
+            }
           </p>
           {publishingStatus.estimatedTime && (
             <p className="text-xs mt-1 opacity-60">
@@ -375,34 +321,7 @@ export default function PostEditor({
           )}
         </div>
       )}
-      {/* Copy-paste content detection feedback */}
-      {pasteInfo && pasteInfo.detected && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm p-4 rounded-md mb-6">
-          <div className="flex items-start gap-2">
-            <div className="flex-shrink-0 w-4 h-4 mt-0.5">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="font-medium mb-1">
-                Copy-pasted content detected from:{" "}
-                {pasteInfo.sources.join(", ")}
-              </p>
-              <p className="text-xs opacity-75">
-                Don't worry! Our system will automatically clean and optimize
-                this content when you publish. This includes removing hidden
-                formatting, fixing encoding issues, and ensuring compatibility.
-                {pasteInfo.confidence > 0.7 && " (High confidence detection)"}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
@@ -444,7 +363,10 @@ export default function PostEditor({
                   {" "}
                   <RichTextEditor
                     content={htmlContent}
-                    onChange={handleContentChange}
+                    onChange={(content) => {
+                      setHtmlContent(content);
+                      setFormData((prev) => ({ ...prev, content }));
+                    }}
                     placeholder="Write your post content here..."
                     className="min-h-[400px]"
                     postId={post?.id}
