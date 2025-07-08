@@ -91,7 +91,7 @@ Ensure you have the following installed:
 ### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/yourusername/inkspace.git
+git clone https://github.com/ishubhgupta/inkspace.git
 cd inkspace
 npm install
 ```
@@ -411,7 +411,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 If you encounter any issues or have questions:
 
-1. Check the [existing issues](https://github.com/yourusername/inkspace/issues)
+1. Check the [existing issues](https://github.com/ishubhgupta/inkspace/issues)
 2. Review the documentation in the `/docs` folder
 3. Run diagnostic scripts for troubleshooting
 
@@ -433,7 +433,7 @@ If you encounter any issues or have questions:
 <div align="center">
   <p>Made with ❤️ by Shubh Gupta for modern blogging</p>
   <p>
-    <a href="https://github.com/yourusername/inkspace">⭐ View on GitHub</a> •
+    <a href="https://github.com/ishubhgupta/inkspace">⭐ View on GitHub</a> •
     <a href="#support">💬 Get Support</a>
   </p>
 </div>
